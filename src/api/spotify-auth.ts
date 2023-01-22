@@ -4,12 +4,9 @@ import { DateTime } from "luxon";
 import dotenv from "dotenv";
 
 dotenv.config();
-const FRONTEND_URL =
-  process.env.NODE_ENV === "production"
-    ? " https://aif-app-client.herokuapp.com/"
-    : "http://localhost:3000";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-const { BACKEND_URL } = process.env;
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 const redirectUri = `${BACKEND_URL}/auth/callback`;
 
 const router = Router();
