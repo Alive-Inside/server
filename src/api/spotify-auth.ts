@@ -9,7 +9,7 @@ const FRONTEND_URL =
     ? " https://aif-app-client.herokuapp.com/"
     : "http://localhost:3000";
 
-const BACKEND_URL = "http://localhost:8080";
+const { BACKEND_URL } = process.env;
 const redirectUri = `${BACKEND_URL}/auth/callback`;
 
 const router = Router();
