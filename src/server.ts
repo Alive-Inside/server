@@ -22,7 +22,10 @@ app.use(cookieParser());
 
 const port = process.env.PORT || 8080;
 
-export const FRONTEND_URL = "https://aif-app-client.herokuapp.com/ ";
+export const FRONTEND_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://aif-app-client.herokuapp.com/"
+    : "http://localhost:3000";
 
 app.use(cors({ credentials: true, origin: FRONTEND_URL }));
 

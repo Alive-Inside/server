@@ -42,7 +42,6 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
         Authorization: BasicAuthHeader(),
       },
     };
-    console.log(redirectUri);
     const tokenResponse = await (
       await fetch("https://accounts.spotify.com/api/token", fetchOptions)
     ).json();
