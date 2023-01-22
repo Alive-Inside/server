@@ -17,6 +17,7 @@ router.get("/logout", (req: Request, res: Response) => {
 });
 
 router.get("/auth/login", (req: Request, res: Response) => {
+  console.log("login hit");
   const clientId = process.env.SPOTIFY_CLIENT_ID;
 
   res.redirect(
@@ -25,6 +26,7 @@ router.get("/auth/login", (req: Request, res: Response) => {
 });
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
+  console.log("Callback hit")
   try {
     const code = req.query.code as string;
     const fetchOptions = {
@@ -75,6 +77,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
       res.redirect(FRONTEND_URL as string);
     }
   } catch (e) {
+    console.error(e);
     res.redirect(FRONTEND_URL as string);
   }
 });

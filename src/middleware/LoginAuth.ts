@@ -11,6 +11,7 @@ const BACKEND_URL =
   process.env.PORT;
 
 const LoginAuth = (req: Request, res: Response, next: NextFunction) => {
+  console.log('cookie',req.headers.cookie)
   try {
     if (req.headers.cookie !== undefined) return next();
     res.redirect(FRONTEND_URL as string);
