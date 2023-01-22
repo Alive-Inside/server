@@ -29,8 +29,10 @@ export const FRONTEND_URL =
 
 app.use(cors({ credentials: true, origin: FRONTEND_URL }));
 
+const environment = process.env.NODE_ENV === "production" ? "prod" : "dev";
+console.log("Frontend URL:", FRONTEND_URL);
 app.listen(port, () => {
-  console.log("Backend live on", port);
+  console.log(`[${environment}] Backend live on`, port);
 });
 
 app.use(spotifyAuth);
