@@ -22,7 +22,6 @@ const RefreshToken = async (
 ) => {
   try {
     if (req.headers.cookie !== undefined) {
-      console.log("MIDDLEWARE");
       const {
         refreshToken,
         accessTokenExpirationDate,
@@ -97,7 +96,6 @@ export const RefreshTokenWithNext = async (
 ) => {
   try {
     if (req.headers.cookie !== undefined) {
-      console.log("MIDDLEWARE");
       const {
         refreshToken,
         expiresAt: accessTokenExpirationDate,
