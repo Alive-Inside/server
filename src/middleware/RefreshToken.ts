@@ -35,6 +35,8 @@ const RefreshToken = async (
 
       if (+new Date() < +new Date(accessTokenExpirationDate)) return next();
 
+      console.log("refresh token expired. grabbing new token");
+
       const response = await (
         await fetch("https://accounts.spotify.com/api/token", {
           method: "POST",

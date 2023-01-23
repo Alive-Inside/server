@@ -26,7 +26,7 @@ router.get("/auth/login", (req: Request, res: Response) => {
 });
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
-  console.log("Callback hit")
+  console.log("Callback hit");
   try {
     const code = req.query.code as string;
     const fetchOptions = {

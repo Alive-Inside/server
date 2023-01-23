@@ -89,6 +89,7 @@ router.get("/search/artists", async (req: Request, res: Response) => {
 });
 
 router.get("/spotify/getCurrentUser", async (req: Request, res: Response) => {
+  console.log('grabbing current user')
   try {
     if (req.headers.cookie !== undefined) {
       const accessToken = JSON.parse(

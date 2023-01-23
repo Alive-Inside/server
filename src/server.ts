@@ -23,15 +23,7 @@ const port = process.env.PORT || 8080;
 
 export const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-app.use(cors({ credentials: true, origin: FRONTEND_URL }));
-
-// app.use(function (req, res, next) {
-//   res.setHeader("Access-Control-Allow-Origin", FRONTEND_URL);
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-//   res.setHeader("Access-Control-Allow-Credentials", "true");
-//   next();
-// });
+app.use(cors({credentials: true, origin: FRONTEND_URL}));
 
 const environment = process.env.NODE_ENV === "production" ? "prod" : "dev";
 console.log("Frontend URL:", FRONTEND_URL);
