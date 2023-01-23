@@ -19,7 +19,6 @@ router.get("/logout", (req: Request, res: Response) => {
 });
 
 router.get("/auth/login", (req: Request, res: Response) => {
-  console.log("login hit");
   const clientId = process.env.SPOTIFY_CLIENT_ID;
 
   res.redirect(
@@ -35,21 +34,24 @@ router.get(
     try {
       if (req.headers.cookie !== undefined) {
         console.log("HAS COOKIES");
-        const accessToken = JSON.parse(
+        const spotifyUserData = JSON.parse(
           cookie.parse(req.headers.cookie).spotifyUserData
-        ).accessToken;
+        );
 
         const currentUserResponse = await (
           await fetch(`https://api.spotify.com/v1/me`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
+            headers: { Authorization: `Bearer ${spotifyUserData.accessToken}` },
           })
         ).json();
-        console.log(currentUserResponse)
+        console.log(currentUserResponse);
         const user = {
           name: currentUserResponse.display_name,
-          avatar: currentUserResponse.images[0]?.url ?? null,
+          avatar: currentUserResponse?.images[0]?.url ?? null,
         };
-        res.send(user);
+        res.send({
+          spotifyUserData,
+          user,
+        });
       } else {
         console.log("NOPE");
         res.send(undefined);
