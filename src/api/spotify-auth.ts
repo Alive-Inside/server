@@ -104,8 +104,9 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
         isPremium: currentUserResponse.product === "premium",
       };
       res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
-        // secure: true,
+        secure: true,
         httpOnly: false,
+        sameSite: 'none',
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
       res.redirect(FRONTEND_URL as string);

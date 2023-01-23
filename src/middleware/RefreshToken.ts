@@ -74,7 +74,9 @@ const RefreshToken = async (
       };
 
       res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
+        secure: true,
         httpOnly: false,
+        sameSite: "none",
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
 
@@ -148,7 +150,9 @@ export const RefreshTokenWithNext = async (
       };
 
       res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
+        secure: true,
         httpOnly: false,
+        sameSite: "none",
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
 
