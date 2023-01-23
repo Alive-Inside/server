@@ -46,7 +46,7 @@ router.get(
         ).json();
         const user = {
           name: currentUserResponse.display_name,
-          avatar: currentUserResponse.images[0] ?? null,
+          avatar: currentUserResponse.images[0].url ?? null,
         };
         res.send(user);
       } else {

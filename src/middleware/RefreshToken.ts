@@ -98,7 +98,7 @@ export const RefreshTokenWithNext = async (
       console.log("MIDDLEWARE");
       const {
         refreshToken,
-        accessTokenExpirationDate,
+        expiresAt: accessTokenExpirationDate,
         refreshTokenExpirationDate,
       } = JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData);
 
@@ -109,6 +109,7 @@ export const RefreshTokenWithNext = async (
 
       if (+new Date() < +new Date(accessTokenExpirationDate)) return next();
 
+      console.log(JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData));
       console.log("refresh token expired. grabbing new token");
 
       const response = await (
