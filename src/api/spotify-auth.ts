@@ -34,7 +34,7 @@ router.get(
     console.log("grabbing current user!");
     try {
       if (req.headers.cookie !== undefined) {
-        console.log('HAS COOKIES')
+        console.log("HAS COOKIES");
         const accessToken = JSON.parse(
           cookie.parse(req.headers.cookie).spotifyUserData
         ).accessToken;
@@ -44,16 +44,18 @@ router.get(
             headers: { Authorization: `Bearer ${accessToken}` },
           })
         ).json();
+        console.log(currentUserResponse)
         const user = {
           name: currentUserResponse.display_name,
-          avatar: currentUserResponse.images[0].url ?? null,
+          avatar: currentUserResponse.images[0]?.url ?? null,
         };
         res.send(user);
       } else {
-        console.log("NOPE")
+        console.log("NOPE");
         res.send(undefined);
       }
     } catch (e) {
+      console.error(e);
       res.sendStatus(500);
     }
   }
@@ -106,7 +108,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
       res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
         secure: true,
         httpOnly: false,
-        sameSite: 'none',
+        sameSite: "none",
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
       res.redirect(FRONTEND_URL as string);
