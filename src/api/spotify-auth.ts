@@ -2,6 +2,8 @@ import cookieParser from "cookie-parser";
 import { Router, Request, Response } from "express";
 import { DateTime } from "luxon";
 import dotenv from "dotenv";
+import cookie from "cookie";
+import RefreshToken, { RefreshTokenWithNext } from "../middleware/RefreshToken";
 
 dotenv.config();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -24,6 +26,38 @@ router.get("/auth/login", (req: Request, res: Response) => {
     `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=playlist-modify-public%20user-read-email%20streaming%20user-read-playback-state%20user-modify-playback-state%20user-read-private`
   );
 });
+
+router.get(
+  "/spotify/getCurrentUser",
+  RefreshTokenWithNext,
+  async (req: Request, res: Response) => {
+    console.log("grabbing current user!");
+    try {
+      if (req.headers.cookie !== undefined) {
+        console.log('HAS COOKIES')
+        const accessToken = JSON.parse(
+          cookie.parse(req.headers.cookie).spotifyUserData
+        ).accessToken;
+
+        const currentUserResponse = await (
+          await fetch(`https://api.spotify.com/v1/me`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          })
+        ).json();
+        const user = {
+          name: currentUserResponse.display_name,
+          avatar: currentUserResponse.images[0] ?? null,
+        };
+        res.send(user);
+      } else {
+        console.log("NOPE")
+        res.send(undefined);
+      }
+    } catch (e) {
+      res.sendStatus(500);
+    }
+  }
+);
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
   console.log("Callback hit");

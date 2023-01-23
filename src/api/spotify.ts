@@ -88,29 +88,6 @@ router.get("/search/artists", async (req: Request, res: Response) => {
   }
 });
 
-router.get("/spotify/getCurrentUser", async (req: Request, res: Response) => {
-  console.log('grabbing current user')
-  try {
-    if (req.headers.cookie !== undefined) {
-      const accessToken = JSON.parse(
-        cookie.parse(req.headers.cookie).spotifyUserData
-      ).accessToken;
-
-      const currentUserResponse = await (
-        await fetch(`https://api.spotify.com/v1/me`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-      ).json();
-      const user = {
-        name: currentUserResponse.display_name,
-        avatar: currentUserResponse.images[0] ?? null,
-      };
-      res.send(user);
-    }
-  } catch (e) {
-    res.sendStatus(500);
-  }
-});
 
 router.post("/getRecommendations", async (req: Request, res: Response) => {
   try {

@@ -23,7 +23,7 @@ const port = process.env.PORT || 8080;
 
 export const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-app.use(cors({credentials: true, origin: FRONTEND_URL}));
+app.use(cors({ credentials: true, origin: FRONTEND_URL }));
 
 const environment = process.env.NODE_ENV === "production" ? "prod" : "dev";
 console.log("Frontend URL:", FRONTEND_URL);
