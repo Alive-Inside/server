@@ -147,6 +147,7 @@ export const RefreshTokenWithNext = async (
         isPremium: currentUserResponse.product === "premium",
       };
 
+      console.log("new cookie", spotifyUserData);
       res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
         secure: true,
         httpOnly: false,
