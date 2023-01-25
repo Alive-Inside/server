@@ -71,7 +71,7 @@ router.get("/decode-token", (req: Request, res: Response) => {
   console.log("token again", token);
   try {
     const spotifyUserData = jwt.verify(token, process.env.JWT_SECRET as string);
-    console.log(spotifyUserData)
+    console.log(spotifyUserData);
     return res.send(spotifyUserData);
   } catch (e) {
     console.log(e);
@@ -130,7 +130,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
       const token = jwt.sign(spotifyUserData, process.env.JWT_SECRET as string);
-      res.redirect(`${FRONTEND_URL}/redirect?jwt=${base64url.encode(token)}}`);
+      res.redirect(`${FRONTEND_URL}?jwt=${base64url.encode(token)}`);
       console.log("token", token);
     }
   } catch (e) {
