@@ -4,6 +4,8 @@ import { DateTime } from "luxon";
 import dotenv from "dotenv";
 import cookie from "cookie";
 import RefreshToken, { RefreshTokenWithNext } from "../middleware/RefreshToken";
+import jwt from "jsonwebtoken";
+import base64url from "base64url";
 
 dotenv.config();
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -15,7 +17,7 @@ const router = Router();
 
 router.get("/logout", (req: Request, res: Response) => {
   res.clearCookie("spotifyUserData");
-  res.redirect(FRONTEND_URL);
+  res.redirect(FRONTEND_URL + "?logout=true");
 });
 
 router.get("/auth/login", (req: Request, res: Response) => {
@@ -62,6 +64,20 @@ router.get(
     }
   }
 );
+
+router.get("/decode-token", (req: Request, res: Response) => {
+  if (!req.query.token) return res.sendStatus(422);
+  const token = base64url.decode(req.query.token as string);
+  console.log("token again", token);
+  try {
+    const spotifyUserData = jwt.verify(token, process.env.JWT_SECRET as string);
+    console.log(spotifyUserData)
+    return res.send(spotifyUserData);
+  } catch (e) {
+    console.log(e);
+    res.sendStatus(500);
+  }
+});
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
   console.log("Callback hit");
@@ -113,7 +129,9 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
         sameSite: "none",
         expires: DateTime.local().plus({ days: 60 }).toJSDate(),
       });
-      res.redirect(FRONTEND_URL as string);
+      const token = jwt.sign(spotifyUserData, process.env.JWT_SECRET as string);
+      res.redirect(`${FRONTEND_URL}/redirect?jwt=${base64url.encode(token)}}`);
+      console.log("token", token);
     }
   } catch (e) {
     console.error(e);
