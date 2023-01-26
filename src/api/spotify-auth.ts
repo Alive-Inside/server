@@ -66,8 +66,8 @@ router.get(
 );
 
 router.get("/decode-token", (req: Request, res: Response) => {
-  if (!req.query.token) return res.sendStatus(422);
-  const token = base64url.decode(req.query.token as string);
+  if (!req.query.jwt) return res.sendStatus(422);
+  const token = base64url.decode(req.query.jwt as string);
   console.log("token again", token);
   try {
     const spotifyUserData = jwt.verify(token, process.env.JWT_SECRET as string);
@@ -97,7 +97,8 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
     };
     const tokenResponse = await (
       await fetch("https://accounts.spotify.com/api/token", fetchOptions)
-    ).json();
+      ).json();
+      console.log(tokenResponse)
     if (tokenResponse.error) {
       res.redirect(`${FRONTEND_URL}?login=false`);
     } else {

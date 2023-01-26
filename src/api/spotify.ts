@@ -4,10 +4,11 @@ import cookie from "cookie";
 
 router.get("/search/tracks", async (req: Request, res: Response) => {
   try {
-    if (req.headers.cookie === undefined) return;
-    const accessToken =
-      res.locals.accessToken ||
-      JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData).accessToken;
+    const { accessToken } = res.locals.spotifyUserData;
+    //  ||
+    // JSON.parse(cookie.parse(req?.headers?.cookie).spotifyUserData)
+    //   .accessToken;
+    if (!accessToken) return res.sendStatus(403);
     const { query, countryCode, limit } = req.query;
     const response = await (
       await fetch(
@@ -53,10 +54,10 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
 
 router.get("/search/artists", async (req: Request, res: Response) => {
   try {
-    if (req.headers.cookie === undefined) return;
-    const accessToken =
-      res.locals.accessToken ||
-      JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData).accessToken;
+    const { accessToken } = res.locals.spotifyUserData;
+    // || JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData).accessToken;
+    if (!accessToken) return res.sendStatus(403);
+
     const { query, countryCode, limit } = req.query;
     const response = await (
       await fetch(
@@ -88,7 +89,6 @@ router.get("/search/artists", async (req: Request, res: Response) => {
   }
 });
 
-
 router.post("/getRecommendations", async (req: Request, res: Response) => {
   try {
     const {
@@ -102,64 +102,64 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
     } = req.body;
     const trackIDsArePresent = trackIDs?.length > 0;
     const artistIDsArePresent = artistIDs?.length > 0;
-    if (req.headers.cookie !== undefined) {
-      const accessToken =
-        res.locals.accessToken ||
-        JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData)
-          .accessToken;
-      const response = await (
-        await fetch(
-          `https://api.spotify.com/v1/recommendations?market=${countryCode}${
-            trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
-          }${
-            artistIDsArePresent ?? false
-              ? `&seed_artists=${`${artistIDs.join(",")}`}`
-              : ""
-          }${genre ? `&seed_genres=${genre}` : ""}&limit=100`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        )
-      ).json();
+    const { accessToken } = res.locals.spotifyUserData;
+    //  ||
 
-      const { tracks: recommendedTracks } = response;
+    // JSON.parse(cookie.parse(req?.headers?.cookie).spotifyUserData)
+    //   .accessToken;
+    if (!accessToken) return res.sendStatus(403);
+    const response = await (
+      await fetch(
+        `https://api.spotify.com/v1/recommendations?market=${countryCode}${
+          trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
+        }${
+          artistIDsArePresent ?? false
+            ? `&seed_artists=${`${artistIDs.join(",")}`}`
+            : ""
+        }${genre ? `&seed_genres=${genre}` : ""}&limit=100`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      )
+    ).json();
 
-      const mappedTracks = recommendedTracks.map((t: any) => {
-        return {
-          album: {
-            id: t.id,
-            largeImageUrl: (t.album.images[0]?.url as string) ?? undefined,
-            smallImageUrl:
-              (t.album.images[t.album.images.length - 1]?.url as string) ??
-              undefined,
-            name: t.album.name,
-            releaseYear: parseInt(t.album.release_date.split("-")[0]),
-          },
-          artist: {
-            id: t.artists[0].id,
-            name: t.artists[0].name,
-            url: t.artists[0].external_urls.spotify,
-          },
-          title: t.name,
-          uri: t.uri,
-          url: t.external_urls.spotify,
+    const { tracks: recommendedTracks } = response;
+
+    const mappedTracks = recommendedTracks.map((t: any) => {
+      return {
+        album: {
           id: t.id,
-          mp3PreviewUrl: t.preview_url,
-        };
-      });
+          largeImageUrl: (t.album.images[0]?.url as string) ?? undefined,
+          smallImageUrl:
+            (t.album.images[t.album.images.length - 1]?.url as string) ??
+            undefined,
+          name: t.album.name,
+          releaseYear: parseInt(t.album.release_date.split("-")[0]),
+        },
+        artist: {
+          id: t.artists[0].id,
+          name: t.artists[0].name,
+          url: t.artists[0].external_urls.spotify,
+        },
+        title: t.name,
+        uri: t.uri,
+        url: t.external_urls.spotify,
+        id: t.id,
+        mp3PreviewUrl: t.preview_url,
+      };
+    });
 
-      const tracksWithoutDuplicates = mappedTracks.filter(
-        (mP: any) => !duplicateTrackIDsToAvoid.includes(mP.id)
-      );
+    const tracksWithoutDuplicates = mappedTracks.filter(
+      (mP: any) => !duplicateTrackIDsToAvoid.includes(mP.id)
+    );
 
-      // const sortedTracks = tracksWithoutDuplicates.sort((a: Track, b: Track) => {
-      //   {
-      //     const diffA = Math.abs(a.album.releaseYear - targetYear);
-      //     const diffB = Math.abs(b.album.releaseYear - targetYear);
-      //     // Sort by the difference, with smaller differences coming first
-      //     return diffA - diffB;
-      //   }
-      // });
-      return res.send({ tracks: tracksWithoutDuplicates.splice(0, limit) });
-    }
+    // const sortedTracks = tracksWithoutDuplicates.sort((a: Track, b: Track) => {
+    //   {
+    //     const diffA = Math.abs(a.album.releaseYear - targetYear);
+    //     const diffB = Math.abs(b.album.releaseYear - targetYear);
+    //     // Sort by the difference, with smaller differences coming first
+    //     return diffA - diffB;
+    //   }
+    // });
+    return res.send({ tracks: tracksWithoutDuplicates.splice(0, limit) });
   } catch (e) {
     res.send(e);
     console.error(e);
