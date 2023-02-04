@@ -66,6 +66,9 @@ const sendEmail = async (message: Email) => {
     });
     console.log("Email sent");
   } catch (e) {
+    console.log("error sending email to ", message.to);
+    console.log("SENDER: ", process.env.SENDGRID_EMAIL_SENDER);
+    console.log("API KEY: ", process.env.SENDGRID_API_KEY);
     console.error(e);
     //@ts-ignore
     console.error(e.response.body.errors);

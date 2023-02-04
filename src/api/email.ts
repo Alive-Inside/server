@@ -4,12 +4,14 @@ import { sendSongListEmail } from "../email";
 const router = Router();
 
 router.post("/email", async (req: Request, res: Response) => {
-  console.log(req.body)
+  console.log(req.body);
   const { emails, formQuestionsAndAnswers } = req.body;
-  console.log(formQuestionsAndAnswers)
+  console.log(formQuestionsAndAnswers);
   for (const email of emails) {
+    console.log("sending email to ", email);
+    console.log(JSON.stringify(formQuestionsAndAnswers));
     await sendSongListEmail(email, formQuestionsAndAnswers);
-    console.log('email sent')
+    console.log("email sent");
   }
   res.status(200);
 });
