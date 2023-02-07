@@ -97,6 +97,7 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
       genre,
       duplicateTrackIDsToAvoid,
       limit,
+      onlyIncludeFromArtistID,
       targetYear,
       countryCode,
     } = req.body;
@@ -104,26 +105,75 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
     const artistIDsArePresent = artistIDs?.length > 0;
     const { accessToken } = res.locals.spotifyUserData;
     //  ||
-
     // JSON.parse(cookie.parse(req?.headers?.cookie).spotifyUserData)
     //   .accessToken;
     if (!accessToken) return res.sendStatus(403);
-    const response = await (
-      await fetch(
-        `https://api.spotify.com/v1/recommendations?market=${countryCode}${
-          trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
-        }${
-          artistIDsArePresent ?? false
-            ? `&seed_artists=${`${artistIDs.join(",")}`}`
-            : ""
-        }${genre ? `&seed_genres=${genre}` : ""}&limit=100`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      )
-    ).json();
+    let recommendedTracks: any[];
+    if (onlyIncludeFromArtistID !== undefined) {
+      const response = await (
+        await fetch(
+          `https://api.spotify.com/v1/artists/${onlyIncludeFromArtistID}/top-tracks?market=${countryCode}`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        )
+      ).json();
+      recommendedTracks = response.tracks;
+    } else {
+      const response = await (
+        await fetch(
+          `https://api.spotify.com/v1/recommendations?market=${countryCode}${
+            trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
+          }${
+            artistIDsArePresent ?? false
+              ? `&seed_artists=${`${artistIDs.join(",")}`}`
+              : ""
+          }${genre ? `&seed_genres=${genre}` : ""}&limit=100`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        )
+      ).json();
+      recommendedTracks = response.tracks;
+    }
 
-    const { tracks: recommendedTracks } = response;
+    const tracksWithoutDuplicates = recommendedTracks.filter(
+      (mP) => !duplicateTrackIDsToAvoid.includes(mP.id)
+    );
 
-    const mappedTracks = recommendedTracks.map((t: any) => {
+    if (tracksWithoutDuplicates.length < limit) {
+      console.log("yeah");
+      const response = await (
+        await fetch(
+          `https://api.spotify.com/v1/recommendations?market=${countryCode}${
+            trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
+          }${
+            artistIDsArePresent ?? false
+              ? `&seed_artists=${`${[
+                  ...artistIDs,
+                  onlyIncludeFromArtistID,
+                ].join(",")}`}`
+              : ""
+          }${genre ? `&seed_genres=${genre}` : ""}&limit=100`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        )
+      ).json();
+      console.log(response.tracks);
+      tracksWithoutDuplicates.push(
+        ...response.tracks.filter(
+          (t) =>
+            ![...duplicateTrackIDsToAvoid, ...tracksWithoutDuplicates].includes(
+              t.id
+            )
+        )
+      );
+    }
+
+    // const sortedTracks = tracksWithoutDuplicates.sort((a: Track, b: Track) => {
+    //   {
+    //     const diffA = Math.abs(a.album.releaseYear - targetYear);
+    //     const diffB = Math.abs(b.album.releaseYear - targetYear);
+    //     // Sort by the difference, with smaller differences coming first
+    //     return diffA - diffB;
+    //   }
+    // });
+    const mappedTracks = tracksWithoutDuplicates.map((t: any) => {
       return {
         album: {
           id: t.id,
@@ -147,19 +197,7 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
       };
     });
 
-    const tracksWithoutDuplicates = mappedTracks.filter(
-      (mP: any) => !duplicateTrackIDsToAvoid.includes(mP.id)
-    );
-
-    // const sortedTracks = tracksWithoutDuplicates.sort((a: Track, b: Track) => {
-    //   {
-    //     const diffA = Math.abs(a.album.releaseYear - targetYear);
-    //     const diffB = Math.abs(b.album.releaseYear - targetYear);
-    //     // Sort by the difference, with smaller differences coming first
-    //     return diffA - diffB;
-    //   }
-    // });
-    return res.send({ tracks: tracksWithoutDuplicates.splice(0, limit) });
+    return res.send({ tracks: mappedTracks.splice(0, limit) });
   } catch (e) {
     res.send(e);
     console.error(e);
