@@ -1,4 +1,4 @@
-import { Request, Response, Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 const router = Router();
 import cookie from "cookie";
 
@@ -203,5 +203,22 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
     console.error(e);
   }
 });
+
+router.post(
+  "/addTracksToPlaylist",
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { trackURIs, position, playlistId } = req.body;
+      await fetch(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackURIs.join(
+          ","
+        )}${position ? `&position=${position}` : ""}`
+      );
+      res.status(200);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
 
 export default router;
