@@ -138,8 +138,7 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
     );
 
     if (tracksWithoutDuplicates.length < limit) {
-      console.log("yeah");
-      const response = await (
+      const { tracks }: { tracks: any[] } = await (
         await fetch(
           `https://api.spotify.com/v1/recommendations?market=${countryCode}${
             trackIDsArePresent ? `&seed_tracks=${trackIDs.join(",")}` : ""
@@ -154,17 +153,23 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
           { headers: { Authorization: `Bearer ${accessToken}` } }
         )
       ).json();
-      console.log(response.tracks);
       tracksWithoutDuplicates.push(
-        ...response.tracks.filter(
-          (t) =>
-            ![...duplicateTrackIDsToAvoid, ...tracksWithoutDuplicates].includes(
-              t.id
-            )
-        )
+        ...tracks
+          .filter(
+            (t) =>
+              ![
+                ...duplicateTrackIDsToAvoid,
+                ...tracksWithoutDuplicates,
+              ].includes(t.id)
+          )
+          .sort((a, b) => {
+            return a.artists.find((a) => a.id === onlyIncludeFromArtistID) !==
+              undefined
+              ? 1
+              : 0;
+          })
       );
     }
-
     // const sortedTracks = tracksWithoutDuplicates.sort((a: Track, b: Track) => {
     //   {
     //     const diffA = Math.abs(a.album.releaseYear - targetYear);
