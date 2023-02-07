@@ -212,7 +212,10 @@ router.post(
       await fetch(
         `https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackURIs.join(
           ","
-        )}${position ? `&position=${position}` : ""}`
+        )}${position ? `&position=${position}` : ""}`,
+        {
+          headers: { Authorization: `Bearer ${res.locals.accessToken}` },
+        }
       );
       res.status(200);
     } catch (e) {
