@@ -73,7 +73,6 @@ const RefreshToken = async (
       isPremium: currentUserResponse.product === "premium",
     };
 
-
     res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
       secure: true,
       httpOnly: false,

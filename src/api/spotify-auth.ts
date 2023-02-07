@@ -97,8 +97,8 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
     };
     const tokenResponse = await (
       await fetch("https://accounts.spotify.com/api/token", fetchOptions)
-      ).json();
-      console.log(tokenResponse)
+    ).json();
+    console.log(tokenResponse);
     if (tokenResponse.error) {
       res.redirect(`${FRONTEND_URL}?login=false`);
     } else {

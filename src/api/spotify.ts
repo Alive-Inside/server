@@ -241,9 +241,10 @@ router.post(
   }
 );
 
-router.get('/getTrack', (req: Request, res: Response, next: NextFunction) => {
-  
-})
+router.get(
+  "/getTrack",
+  (req: Request, res: Response, next: NextFunction) => {}
+);
 
 router.post(
   "/addTracksToPlaylist",
