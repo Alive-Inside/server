@@ -23,14 +23,13 @@ const RefreshToken = async (
     if (
       req.headers.cookie === undefined &&
       req.headers.authorization === undefined
-      )
+    )
       return res.sendStatus(403);
-      
-      const { refreshToken, expiresAt } =
+    const { refreshToken, expiresAt } =
       // JSON.parse(cookie.parse(req.headers.cookie))
       res.locals.spotifyUserData;
-      
-      if (+new Date() < +new Date(expiresAt)) return next();
+
+    if (+new Date() < +new Date(expiresAt)) return next();
 
     if (+new Date() < +new Date(expiresAt)) {
       res.clearCookie("spotifyUserData");
@@ -74,6 +73,7 @@ const RefreshToken = async (
       isPremium: currentUserResponse.product === "premium",
     };
 
+
     res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
       secure: true,
       httpOnly: false,
@@ -81,7 +81,7 @@ const RefreshToken = async (
       expires: DateTime.local().plus({ days: 60 }).toJSDate(),
     });
 
-    res.locals.accessToken = accessToken;
+    res.locals.spotifyUserData = spotifyUserData;
     next();
   } catch (e) {
     console.error("refresh token issue");
