@@ -243,7 +243,41 @@ router.post(
 
 router.get(
   "/getTrack",
-  (req: Request, res: Response, next: NextFunction) => {}
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { trackId } = req.body;
+      const response = await (
+        await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+          headers: {
+            Authorization: `Bearer ${res.locals.spotifyUserData.accessToken}`,
+          },
+        })
+      ).json();
+      const responseObj = {
+        mp3PreviewUrl: response.preview_url,
+        id: response.id,
+        url: response.external_urls.spotify,
+        title: response.name as string,
+        uri: response.uri as string,
+        artist: {
+          id: response.artists[0].id,
+          name: response.artists[0].name,
+          url: response.artists[0].external_urls.spotify as string,
+        },
+        album: {
+          name: response.album.name,
+          id: response.album.id,
+          largeImageUrl: response.album.images[0].url as string,
+          smallImageUrl: response.album.images[response.album.images.length - 1]
+            .url as string,
+          releaseYear: parseInt(response.album.release_date.split("-")[0]),
+        },
+      };
+      res.send(responseObj);
+    } catch (e) {
+      res.sendStatus(500);
+    }
+  }
 );
 
 router.post(
