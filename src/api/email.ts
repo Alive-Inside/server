@@ -9,8 +9,12 @@ router.post("/email", async (req: Request, res: Response) => {
   console.log(req.body);
   const { emails, formQuestionsAndAnswers } = req.body;
   console.log(formQuestionsAndAnswers);
-  console.log(_.uniq(["mrb@aliveinside.org", ...emails]));
-  for (const email of _.uniq(["mrb@aliveinside.org", ...emails])) {
+  const emailsWithAdmin =
+    process.env.NODE_ENV === "production"
+      ? _.uniq(["mrb@aliveinside.org", ...emails])
+      : emails;
+  console.log(emailsWithAdmin);
+  for (const email of emailsWithAdmin) {
     console.log("sending email to ", email);
     console.log(JSON.stringify(formQuestionsAndAnswers));
     await sendSongListEmail(email, formQuestionsAndAnswers);
