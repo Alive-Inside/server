@@ -64,7 +64,7 @@ const sendEmail = async (message: Email) => {
       ...message,
       from: process.env.SENDGRID_EMAIL_SENDER as string,
     });
-    console.log("Email sent");
+    console.log("Email sent to ", message.to);
   } catch (e) {
     console.log("error sending email to ", message.to);
     console.log("SENDER: ", process.env.SENDGRID_EMAIL_SENDER);

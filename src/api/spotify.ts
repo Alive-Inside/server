@@ -214,8 +214,7 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { trackURIs, position, playlistId } = req.body;
-      res.sendStatus(200);
-      await fetch(
+      fetch(
         `https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackURIs.join(
           ","
         )}${position ? `&position=${position}` : ""}`,
@@ -223,8 +222,10 @@ router.post(
           headers: { Authorization: `Bearer ${res.locals.accessToken}` },
         }
       );
-    } catch (e) {
-      next(e);
+      res.send({});
+    } catch (error) {
+      res.send({ error });
+      next(error);
     }
   }
 );

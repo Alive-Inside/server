@@ -14,12 +14,8 @@ router.post("/email", async (req: Request, res: Response) => {
       process.env.NODE_ENV === "production"
         ? _.uniq(["mrb@aliveinside.org", ...emails])
         : emails;
-    console.log(emailsWithAdmin);
     for (const email of emailsWithAdmin) {
-      console.log("sending email to ", email);
-      console.log(JSON.stringify(formQuestionsAndAnswers));
       await sendSongListEmail(email, formQuestionsAndAnswers);
-      console.log("email sent");
     }
     res.sendStatus(200);
   } catch (e) {
