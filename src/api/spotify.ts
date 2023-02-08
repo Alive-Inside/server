@@ -291,6 +291,7 @@ router.post(
           ","
         )}${position ? `&position=${position}` : ""}`,
         {
+          method: "POST",
           headers: { Authorization: `Bearer ${res.locals.accessToken}` },
         }
       );
