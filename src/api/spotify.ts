@@ -299,7 +299,7 @@ router.post(
           }
         )
       ).json();
-      res.send({});
+      res.send(response);
     } catch (error) {
       res.send({ error });
       next(error);
