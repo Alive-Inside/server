@@ -6,10 +6,8 @@ const router = Router();
 
 router.post("/email", async (req: Request, res: Response) => {
   try {
-    console.log("Hit email");
-    console.log(req.body);
+    console.log("Arrived at email endpoint ");
     const { emails, formQuestionsAndAnswers } = req.body;
-    console.log(formQuestionsAndAnswers);
     const emailsWithAdmin =
       process.env.NODE_ENV === "production"
         ? _.uniq(["mrb@aliveinside.org", ...emails])

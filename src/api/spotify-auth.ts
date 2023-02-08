@@ -32,10 +32,8 @@ router.get(
   "/spotify/getCurrentUser",
   RefreshTokenWithNext,
   async (req: Request, res: Response) => {
-    console.log("grabbing current user!");
     try {
       if (req.headers.cookie !== undefined) {
-        console.log("HAS COOKIES");
         const spotifyUserData = JSON.parse(
           cookie.parse(req.headers.cookie).spotifyUserData
         );
@@ -45,7 +43,6 @@ router.get(
             headers: { Authorization: `Bearer ${spotifyUserData.accessToken}` },
           })
         ).json();
-        console.log(currentUserResponse);
         const user = {
           name: currentUserResponse.display_name,
           avatar: currentUserResponse?.images[0]?.url ?? null,
@@ -55,7 +52,6 @@ router.get(
           user,
         });
       } else {
-        console.log("NOPE");
         res.send(undefined);
       }
     } catch (e) {
@@ -68,19 +64,16 @@ router.get(
 router.get("/decode-token", (req: Request, res: Response) => {
   if (!req.query.jwt) return res.sendStatus(422);
   const token = base64url.decode(req.query.jwt as string);
-  console.log("token again", token);
   try {
     const spotifyUserData = jwt.verify(token, process.env.JWT_SECRET as string);
-    console.log(spotifyUserData);
     return res.send(spotifyUserData);
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.sendStatus(500);
   }
 });
 
 router.get("/auth/callback", async (req: Request, res: Response) => {
-  console.log("Callback hit");
   try {
     const code = req.query.code as string;
     const fetchOptions = {
@@ -98,7 +91,6 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
     const tokenResponse = await (
       await fetch("https://accounts.spotify.com/api/token", fetchOptions)
     ).json();
-    console.log(tokenResponse);
     if (tokenResponse.error) {
       res.redirect(`${FRONTEND_URL}?login=false`);
     } else {
@@ -132,7 +124,6 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
       });
       const token = jwt.sign(spotifyUserData, process.env.JWT_SECRET as string);
       res.redirect(`${FRONTEND_URL}?jwt=${base64url.encode(token)}`);
-      console.log("token", token);
     }
   } catch (e) {
     console.error(e);
