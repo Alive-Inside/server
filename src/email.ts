@@ -77,9 +77,14 @@ const sendEmail = async (message: Email) => {
 
 const sendSongListEmail = async (
   to: string,
-  formValues: { question: string; answer: string }[]
+  formValues: { question: string; answer: string }[],
+  tracks: { title: string; artistName: string }[]
 ) => {
   try {
+    const listOfTracksInText = tracks
+      .map((t) => `${t.title} - ${t.artistName}`)
+      .join("<br/>");
+    console.log(listOfTracksInText);
     await sendEmail({
       subject: `AIFAPP.COM - Details for your Elder ${formValues[0].answer}`,
       text: "Your elders answers from the Alive Inside app",
@@ -92,6 +97,10 @@ Thank you so much for doing what so few do. We hope you learned a lot about your
       }'s Stories and Songlist:</b><br/><br/>
 
 ${formValues.map((p) => `${p.question} : <b>${p.answer}</b>`).join("<br/>")}
+<br/>
+<br/>
+<b>Songlist:</b></br>
+${listOfTracksInText}
 <br/>
 <br/>
 <br/>
