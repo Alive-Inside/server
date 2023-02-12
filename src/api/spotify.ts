@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response, Router } from "express";
 const router = Router();
 import cookie from "cookie";
+import { uniq } from "lodash";
 
 router.get("/search/tracks", async (req: Request, res: Response) => {
+  const TRACK_SEARCH_MINIMUM = 15;
   try {
     const { accessToken } = res.locals.spotifyUserData;
     //  ||
@@ -10,11 +12,19 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
     //   .accessToken;
     if (!accessToken) return res.sendStatus(403);
     const { query, countryCode, limit } = req.query;
+    let limitToInclude: number;
+    if (limit) {
+      const limitAsNumber = parseInt(limit as string);
+      limitToInclude =
+        limitAsNumber < TRACK_SEARCH_MINIMUM
+          ? TRACK_SEARCH_MINIMUM
+          : limitAsNumber;
+    } else {
+      limitToInclude = TRACK_SEARCH_MINIMUM;
+    }
     const response = await (
       await fetch(
-        `https://api.spotify.com/v1/search?q=${query}&limit=${
-          limit ?? 5
-        }&country=${countryCode}&type=track`,
+        `https://api.spotify.com/v1/search?q=${query}&limit=${limitToInclude}&country=${countryCode}&type=track`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
     ).json();
@@ -23,7 +33,17 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
       res.send(response.message).status(response.status);
       return;
     }
-    const tracks = response.tracks.items.map((t: any) => {
+    console.log(response.tracks.items.map(x=>x.artists))
+    const uniqueTracks: any[] = [];
+    for (const track of response.tracks.items) {
+      const duplicates = uniqueTracks.filter(
+        (t) => t.artists[0].name === track.artists[0].name
+      );
+      if (duplicates.length === 0) uniqueTracks.push(track);
+    }
+
+    const limitedTracks = uniqueTracks.splice(0, parseInt(limit as string));
+    const mappedTracks = limitedTracks.map((t: any) => {
       return {
         mp3PreviewUrl: t.preview_url,
         id: t.id,
@@ -45,7 +65,7 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
         },
       };
     });
-    res.send(tracks);
+    res.send(mappedTracks);
   } catch (e) {
     console.error(e);
     res.sendStatus(500);
@@ -101,6 +121,7 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
       targetYear,
       countryCode,
     } = req.body;
+    console.log("country code:", countryCode);
     const trackIDsArePresent = trackIDs?.length > 0;
     const artistIDsArePresent = artistIDs?.length > 0;
     const { accessToken } = res.locals.spotifyUserData;
