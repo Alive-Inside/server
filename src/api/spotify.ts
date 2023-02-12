@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response, Router } from "express";
 const router = Router();
 import cookie from "cookie";
-import { uniq } from "lodash";
+import { chunk, uniq } from "lodash";
 
 router.get("/search/tracks", async (req: Request, res: Response) => {
   const TRACK_SEARCH_MINIMUM = 15;
@@ -33,7 +33,7 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
       res.send(response.message).status(response.status);
       return;
     }
-    console.log(response.tracks.items.map(x=>x.artists))
+    console.log(response.tracks.items.map((x) => x.artists));
     const uniqueTracks: any[] = [];
     for (const track of response.tracks.items) {
       const duplicates = uniqueTracks.filter(
@@ -121,7 +121,6 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
       targetYear,
       countryCode,
     } = req.body;
-    console.log("country code:", countryCode);
     const trackIDsArePresent = trackIDs?.length > 0;
     const artistIDsArePresent = artistIDs?.length > 0;
     const { accessToken } = res.locals.spotifyUserData;
@@ -307,21 +306,24 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { trackURIs, position, playlistId } = req.body;
-      const response = await (
-        await fetch(
-          `https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackURIs.join(
-            ","
-          )}${position ? `&position=${position}` : ""}`,
+      const trackURIChunks = chunk(trackURIs, 25);
+      for (const trackURIChunk of trackURIChunks) {
+        const trackURIs = trackURIChunk.join(",");
+        const response = await fetch(
+          `https://api.spotify.com/v1/playlists/${playlistId}/tracks?uris=${trackURIs}${
+            position ? `&position=${position}` : ""
+          }`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${res.locals.spotifyUserData.accessToken}`,
             },
           }
-        )
-      ).json();
-      res.send(response);
+        );
+      }
+      res.sendStatus(200);
     } catch (error) {
+      console.error(error);
       res.send({ error });
       next(error);
     }
