@@ -24,7 +24,7 @@ router.get("/auth/login", (req: Request, res: Response) => {
   const clientId = process.env.SPOTIFY_CLIENT_ID;
 
   res.redirect(
-    `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=playlist-modify-public%20user-read-email%20streaming%20user-read-playback-state%20user-modify-playback-state%20user-read-private`
+    `https://accounts.spotify.com/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=playlist-modify-public%20user-read-email%20user-read-private`
   );
 });
 

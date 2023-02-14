@@ -24,7 +24,7 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
     }
     const response = await (
       await fetch(
-        `https://api.spotify.com/v1/search?q=${query}&limit=${limitToInclude}&country=${countryCode}&type=track`,
+        `https://api.spotify.com/v1/search?q=${query}&limit=${limitToInclude}&country=${countryCode}&type=track&include_external=audio`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
     ).json();
