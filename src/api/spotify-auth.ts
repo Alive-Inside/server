@@ -127,7 +127,7 @@ router.get("/auth/callback", async (req: Request, res: Response) => {
     }
   } catch (e) {
     console.error(e);
-    res.redirect(FRONTEND_URL as string);
+    res.redirect(`${FRONTEND_URL as string}`);
   }
 });
 

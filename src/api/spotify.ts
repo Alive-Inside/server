@@ -11,7 +11,7 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
     // JSON.parse(cookie.parse(req?.headers?.cookie).spotifyUserData)
     //   .accessToken;
     if (!accessToken) return res.sendStatus(403);
-    const { query, countryCode, limit } = req.query;
+    const { query, market, limit } = req.query;
     let limitToInclude: number;
     if (limit) {
       const limitAsNumber = parseInt(limit as string);
@@ -24,7 +24,7 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
     }
     const response = await (
       await fetch(
-        `https://api.spotify.com/v1/search?q=${query}&limit=${limitToInclude}&country=${countryCode}&type=track&include_external=audio`,
+        `https://api.spotify.com/v1/search?q=${query}&limit=${limitToInclude}&market=${market}&type=track&include_external=audio`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
     ).json();
@@ -33,7 +33,6 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
       res.send(response.message).status(response.status);
       return;
     }
-    console.log(response.tracks.items.map((x) => x.artists));
     const uniqueTracks: any[] = [];
     for (const track of response.tracks.items) {
       const duplicates = uniqueTracks.filter(
@@ -58,6 +57,8 @@ router.get("/search/tracks", async (req: Request, res: Response) => {
         album: {
           name: t.album.name,
           id: t.album.id,
+          url: `https://open.spotify.com/album/${t.album.id}`,
+          uri: t.album.uri,
           largeImageUrl: t.album.images[0].url as string,
           smallImageUrl: t.album.images[t.album.images.length - 1]
             .url as string,
@@ -78,12 +79,24 @@ router.get("/search/artists", async (req: Request, res: Response) => {
     // || JSON.parse(cookie.parse(req.headers.cookie).spotifyUserData).accessToken;
     if (!accessToken) return res.sendStatus(403);
 
-    const { query, countryCode, limit } = req.query;
+    const { query, market, limit } = req.query;
+    // const responseText = await (
+    //   await fetch(
+    //     `https://api.spotify.com/v1/search?q=${query}&limit=${
+    //       limit ?? 5
+    //     }&country=${countryCode}&type=artist`,
+    //     { headers: { Authorization: `Bearer ${accessToken}` } }
+    //   )
+    // ).text();
+    // if (responseText == 'User not registered in the Developer Dashboard') {
+    //   // Handle this
+    // }
+
     const response = await (
       await fetch(
         `https://api.spotify.com/v1/search?q=${query}&limit=${
           limit ?? 5
-        }&country=${countryCode}&type=artist`,
+        }&market=${market}&type=artist`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       )
     ).json();
@@ -94,6 +107,7 @@ router.get("/search/artists", async (req: Request, res: Response) => {
         largeImageUrl: t.images[1]?.url ?? undefined,
         smallImageUrl:
           (t.images[t.images.length - 1]?.url as string) ?? undefined,
+        url: t.external_urls.spotify,
       };
     });
     if (response.error) {
@@ -208,6 +222,8 @@ router.post("/getRecommendations", async (req: Request, res: Response) => {
             undefined,
           name: t.album.name,
           releaseYear: parseInt(t.album.release_date.split("-")[0]),
+          url: t.album.url,
+          uri: t.album.uri,
         },
         artist: {
           id: t.artists[0].id,

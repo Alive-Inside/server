@@ -29,14 +29,22 @@ const RefreshToken = async (
       // JSON.parse(cookie.parse(req.headers.cookie))
       res.locals.spotifyUserData;
 
-    if (+new Date() < +new Date(expiresAt)) return next();
+    const timestamp = DateTime.now(),
+      accessTokenExpirationDate = DateTime.fromISO(expiresAt);
+    const minutesRemaining = Math.ceil(
+      accessTokenExpirationDate.diff(timestamp, "minutes").minutes
+    );
 
-    if (+new Date() < +new Date(expiresAt)) {
-      res.clearCookie("spotifyUserData");
-      return res.send({ redirect: true });
+    const accessTokenIsExpired = timestamp >= accessTokenExpirationDate;
+
+    if (!accessTokenIsExpired) {
+      console.log(
+        `\n--- Access token expires in ${minutesRemaining} minutes.---\n`
+      );
+      return next();
     }
 
-    console.log("refresh token expired. grabbing new token");
+    console.log("\n--- Access token expired. Getting new token ---\n");
 
     const response = await (
       await fetch("https://accounts.spotify.com/api/token", {
@@ -54,33 +62,35 @@ const RefreshToken = async (
     if (response.error) {
       console.error("error getting refresh token");
       console.error(response.error);
+    } else {
+      const { access_token: accessToken, expires_in: expiresIn } = response;
+      console.log("\n--- New Access Token: ---\n");
+      console.log(accessToken);
+      const currentUserResponse = await (
+        await fetch(`https://api.spotify.com/v1/me`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        })
+      ).json();
+      const spotifyUserData = {
+        userId: currentUserResponse.id,
+        countryCode: currentUserResponse.country,
+        name: currentUserResponse.display_name,
+        email: currentUserResponse.email,
+        accessToken,
+        refreshToken,
+        expiresAt: DateTime.local().plus({ seconds: expiresIn }).toJSDate(),
+        avatar: currentUserResponse.images[0] ?? null,
+        isPremium: currentUserResponse.product === "premium",
+      };
+
+      res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
+        secure: true,
+        httpOnly: false,
+        sameSite: "none",
+        expires: DateTime.local().plus({ days: 60 }).toJSDate(),
+      });
+      res.locals.spotifyUserData = spotifyUserData;
     }
-    const { access_token: accessToken, expires_in: expiresIn } = response;
-    const currentUserResponse = await (
-      await fetch(`https://api.spotify.com/v1/me`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-    ).json();
-    const spotifyUserData = {
-      userId: currentUserResponse.id,
-      countryCode: currentUserResponse.country,
-      name: currentUserResponse.display_name,
-      email: currentUserResponse.email,
-      accessToken,
-      refreshToken,
-      expiresAt: DateTime.local().plus({ seconds: expiresIn }).toJSDate(),
-      avatar: currentUserResponse.images[0] ?? null,
-      isPremium: currentUserResponse.product === "premium",
-    };
-
-    res.cookie("spotifyUserData", JSON.stringify(spotifyUserData), {
-      secure: true,
-      httpOnly: false,
-      sameSite: "none",
-      expires: DateTime.local().plus({ days: 60 }).toJSDate(),
-    });
-
-    res.locals.spotifyUserData = spotifyUserData;
     next();
   } catch (e) {
     console.error("refresh token issue");
@@ -100,14 +110,16 @@ export const RefreshTokenWithNext = async (
       res.locals.spotifyUserData
     );
 
-    if (+new Date() < +new Date(expiresAt)) return next();
-
-    if (+new Date() > +new Date(expiresAt)) {
-      res.clearCookie("spotifyUserData");
-      return res.send({ redirect: true });
-    }
-
-    console.log("refresh token expired. grabbing new token");
+    const timestamp = DateTime.now(),
+      accessTokenExpirationDate = DateTime.fromISO(expiresAt);
+    const minutesRemaining = Math.ceil(
+      accessTokenExpirationDate.diff(timestamp, "minutes").minutes
+    );
+    console.log(
+      `\n--- Access token expires in ${minutesRemaining} minutes.---\n`
+    );
+    if (timestamp < accessTokenExpirationDate) return next();
+    console.log("access token expired. grabbing new token");
 
     const response = await (
       await fetch("https://accounts.spotify.com/api/token", {
@@ -127,6 +139,7 @@ export const RefreshTokenWithNext = async (
       console.error(response.error);
     }
     const { access_token: accessToken, expires_in: expiresIn } = response;
+    console.log("\n--- New Access Token: ---\n", accessToken);
     const currentUserResponse = await (
       await fetch(`https://api.spotify.com/v1/me`, {
         headers: { Authorization: `Bearer ${accessToken}` },
