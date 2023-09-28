@@ -64,7 +64,7 @@ const sendEmail = async (message: Email) => {
       ...message,
       from: process.env.SENDGRID_EMAIL_SENDER as string,
     });
-    console.log("Email sent to ", message.to);
+    console.log("Email sent to", message.to);
   } catch (e) {
     console.log("error sending email to ", message.to);
     console.log("SENDER: ", process.env.SENDGRID_EMAIL_SENDER);
@@ -78,13 +78,13 @@ const sendEmail = async (message: Email) => {
 const sendSongListEmail = async (
   to: string,
   formValues: { question: string; answer: string }[],
-  tracks: { title: string; artistName: string }[]
+  tracks: { title: string; artistName: string }[],
+  sessionNotes: string
 ) => {
   try {
     const listOfTracksInText = tracks
       .map((t) => `${t.title} - ${t.artistName}`)
       .join("<br/>");
-    console.log(listOfTracksInText);
     await sendEmail({
       subject: `AIFAPP.COM - Details for your Elder ${formValues[0].answer}`,
       text: "Your elders answers from the Alive Inside app",
@@ -94,13 +94,21 @@ Thank you so much for doing what so few do. We hope you learned a lot about your
 
 <b>Here are your elder, ${
         formValues[0].answer
-      }'s Stories and Songlist:</b><br/><br/>
+      }'s Stories and Songlist:</b><br/>
 
 ${formValues.map((p) => `${p.question} : <b>${p.answer}</b>`).join("<br/>")}
 <br/>
 <br/>
-<b>Songlist:</b></br>
+<b>Songlist:</b><br/>
 ${listOfTracksInText}
+<br/>
+<br/>
+${
+  sessionNotes?.length > 0
+    ? `<b>Your session notes:</b><br/>${sessionNotes}`
+    : ""
+}
+
 <br/>
 <br/>
 <br/>
