@@ -41,7 +41,7 @@ type QuestionnaireFormValues = {
   firstSongHeard: Track[];
   eldersFirstName: string;
   eldersBirthYear: number;
-  musicalPreference: string;
+  musicalPreferences: string[];
   favoriteArtistsAsChild: Artist[];
   musiciansFromHeritage: Artist[];
   musiciansParentsListenedTo: Artist[];
