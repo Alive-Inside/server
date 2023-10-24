@@ -92,7 +92,7 @@ const sendSongListEmail = async (
       to,
       html: `Dear Alive Inside Hero,<br/><br/>
 Thank you so much for doing what so few do. We hope you learned a lot about your elder and yourself!<br/><br/>
-<br/><br/>
+<br/>
 Here's your playlist:
 ${playlistUrl}
 <br/><br/>
