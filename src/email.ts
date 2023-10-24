@@ -79,7 +79,8 @@ const sendSongListEmail = async (
   to: string,
   formValues: { question: string; answer: string }[],
   tracks: { title: string; artistName: string }[],
-  sessionNotes: string
+  sessionNotes: string,
+  playlistUrl: string
 ) => {
   try {
     const listOfTracksInText = tracks
@@ -91,7 +92,10 @@ const sendSongListEmail = async (
       to,
       html: `Dear Alive Inside Hero,<br/><br/>
 Thank you so much for doing what so few do. We hope you learned a lot about your elder and yourself!<br/><br/>
-
+<br/><br/>
+Here's your playlist:
+${playlistUrl}
+<br/><br/>
 <b>Here are your elder, ${
         formValues[0].answer
       }'s Stories and Songlist:</b><br/>
