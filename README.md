@@ -1,3 +1,3 @@
 # API for https://aifapp.com
 
-![alt text](spotify-results.png)asd
+![alt text](spotify-results.png)
